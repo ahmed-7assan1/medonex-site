@@ -1,20 +1,2 @@
-User-Agent: *
-Allow: /
-Disallow: /api/
-Disallow: /admin/
-Disallow: /auth/
-Disallow: /tma/
-Disallow: /claude-labs/
-
-User-Agent: meta-webindexer
-User-Agent: meta-externalagent
-User-Agent: OAI-SearchBot
-User-Agent: GPTBot
-User-Agent: Amazonbot
-User-Agent: ClaudeBot
-User-Agent: PerplexityBot
-User-Agent: CCBot
-User-Agent: Bytespider
+User-agent: *
 Disallow: /
-
-Sitemap: https://www.medonex.me/sitemap.xml
