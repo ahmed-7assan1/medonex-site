@@ -36,6 +36,15 @@ jobs:
         working-directory: src-repo
         run: npm install --no-audit --no-fund --legacy-peer-deps
 
+      # The source branch's pruned package-lock.json lacks the vidstack
+      # subtree (transitive deps of @vidstack/react). package.json and
+      # package-lock.json must NOT be edited on that branch (they trigger
+      # the private repo's Android APK workflow), so the missing packages
+      # are installed here without saving, in the throwaway CI clone.
+      - name: Install unhoisted transitive deps (vidstack subtree)
+        working-directory: src-repo
+        run: npm install --no-save --no-audit --no-fund --legacy-peer-deps vidstack@0.6.15 maverick.js@0.37.0 @maverick-js/signals@5.11.5 media-captions@0.0.18
+
       - name: "Static export build (trial subset: landing + docs + faq + offline)"
         working-directory: src-repo
         env:
