@@ -1,0 +1,70 @@
+name: Build and publish static trial site
+
+# Manual trigger only: fork PRs and pushes can never run this, so the
+# read-only deploy key secret is never exposed to untrusted code.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repo (medonex-site)
+        uses: actions/checkout@v4
+        with:
+          path: site
+
+      - name: Checkout private source (read-only, single-repo deploy key)
+        uses: actions/checkout@v4
+        with:
+          repository: ahmed-7assan1/MedQs0
+          ref: github-pages-main
+          ssh-key: ${{ secrets.MEDQS0_DEPLOY_KEY }}
+          path: src-repo
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: src-repo/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src-repo
+        run: npm install --no-audit --no-fund --legacy-peer-deps
+
+      - name: Static export build (trial subset: landing + docs + faq + offline)
+        working-directory: src-repo
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+          NEXT_TELEMETRY_DISABLED: 1
+          PAGES_BASE_PATH: ""
+        run: bash scripts/export-pages-trial.sh
+
+      - name: Leak guard - refuse to publish source, env files or secret strings
+        run: |
+          set -e
+          if find src-repo/out -name '.env*' -o -name '*.ts' -o -name '*.tsx' -o -name '*.map' | grep .; then
+            echo "Refusing to publish: unexpected source/env files in out/"; exit 1
+          fi
+          if grep -rIlE 'DATABASE_URL|SERVICE_ROLE|ENCRYPTION_KEY|api_secret|BEGIN .*PRIVATE KEY' src-repo/out 2>/dev/null | grep .; then
+            echo "Refusing to publish: secret-looking content in out/"; exit 1
+          fi
+          echo "leak guard passed"
+
+      - name: Publish build output only
+        working-directory: site
+        run: |
+          set -e
+          git config user.name "MedOneX Assistant"
+          git config user.email "ahmed.mo7amed.7assan@gmail.com"
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'README.md' -exec rm -rf {} +
+          cp -r ../src-repo/out/. .
+          touch .nojekyll
+          cp index.html 404.html
+          git add -A
+          git commit -m "Static trial export (landing + docs + faq + offline)" || echo "no changes to publish"
+          git push
