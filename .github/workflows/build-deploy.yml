@@ -84,7 +84,6 @@ jobs:
           cp -r "${{ steps.locate.outputs.OUT_DIR }}/." .
           touch .nojekyll
           echo "pages.medonex.me" > CNAME
-          cp index.html 404.html
           git add -A
           git commit -m "Static trial export (landing + docs + faq + offline)" || echo "no changes to publish"
           git push
