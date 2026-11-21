@@ -47,6 +47,10 @@ jobs:
           # is unreachable (4s/6s caps). Never published - only out/ ships.
           DATABASE_URL: "postgresql://build:build@localhost:5432/build?connection_limit=1"
           DIRECT_URL: "postgresql://build:build@localhost:5432/build?connection_limit=1"
+          # Public-by-design values (they ship inside client bundles on the live
+          # site too); stored as secrets to keep the workflow file generic.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: bash scripts/export-pages-trial.sh
 
       - name: Leak guard - refuse to publish source, env files or secret strings
