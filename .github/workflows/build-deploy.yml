@@ -36,7 +36,7 @@ jobs:
         working-directory: src-repo
         run: npm install --no-audit --no-fund --legacy-peer-deps
 
-      - name: Static export build (trial subset: landing + docs + faq + offline)
+      - name: "Static export build (trial subset: landing + docs + faq + offline)"
         working-directory: src-repo
         env:
           NODE_OPTIONS: --max-old-space-size=6144
