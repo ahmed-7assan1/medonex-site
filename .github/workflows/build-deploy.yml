@@ -57,9 +57,13 @@ jobs:
         id: locate
         run: |
           set -e
-          OUT_DIR=$(find "$GITHUB_WORKSPACE" -maxdepth 5 -name index.html -not -path '*/node_modules/*' -printf '%h\n' 2>/dev/null | sort | head -1)
-          if [ -z "$OUT_DIR" ]; then
-            echo "FATAL: no exported index.html found anywhere under $GITHUB_WORKSPACE"; exit 1
+          # Deterministic: the source repo exports into .next-export (custom distDir)
+          # or out/. Never search the whole workspace - the published repo itself
+          # contains an index.html and would win the search.
+          OUT_DIR="$GITHUB_WORKSPACE/src-repo/.next-export"
+          if [ ! -f "$OUT_DIR/index.html" ]; then OUT_DIR="$GITHUB_WORKSPACE/src-repo/out"; fi
+          if [ ! -f "$OUT_DIR/index.html" ]; then
+            echo "FATAL: no exported index.html in src-repo/.next-export or src-repo/out"; exit 1
           fi
           echo "OUT_DIR=$OUT_DIR" | tee -a "$GITHUB_OUTPUT"
 
