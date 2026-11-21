@@ -42,6 +42,11 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=6144
           NEXT_TELEMETRY_DISABLED: 1
           PAGES_BASE_PATH: ""
+          # Dummy build-time-only values: prisma.ts throws at import when
+          # DATABASE_URL is unset; site config falls back safely when the DB
+          # is unreachable (4s/6s caps). Never published - only out/ ships.
+          DATABASE_URL: "postgresql://build:build@localhost:5432/build?connection_limit=1"
+          DIRECT_URL: "postgresql://build:build@localhost:5432/build?connection_limit=1"
         run: bash scripts/export-pages-trial.sh
 
       - name: Leak guard - refuse to publish source, env files or secret strings
